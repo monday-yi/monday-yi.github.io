@@ -2,16 +2,21 @@ const fs = require('fs');
 const { marked } = require('marked');
 
 const mdFile = process.argv[2];
-const mdContent = fs.readFileSync(mdFile, 'utf-8');
+let mdContent = fs.readFileSync(mdFile, 'utf-8');
 
-// 提取标题
+// 提取标题和日期 (对齐 "修补裂缝的人")
 const titleMatch = mdContent.match(/^# (.+)$/m);
 const title = titleMatch ? titleMatch[1] : '无标题';
 
-// 使用 marked 转换 markdown
-const html = marked.parse(mdContent);
+const dateMatch = mdFile.match(/(\d{4}-\d{2}-\d{2})/);
+const date = dateMatch ? dateMatch[1] : new Date().toISOString().split('T')[0];
 
-// 生成完整的 HTML
+// 重要：从正文中彻底移除第一行一级标题，避免重复显示
+mdContent = mdContent.replace(/^# .+\n/, '').trim();
+
+// 使用 marked 转换，确保段落被正确包裹
+const htmlContent = marked.parse(mdContent);
+
 const fullHtml = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -33,111 +38,54 @@ const fullHtml = `<!DOCTYPE html>
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Noto Serif SC', serif;
+            font-family: 'Noto Serif SC', 'STSong', serif;
             background: var(--bg);
             color: var(--text);
-            line-height: 1.8;
-            padding: 2rem 1rem;
+            line-height: 2;
+            font-size: 17px;
+            min-height: 100vh;
         }
-        .container {
-            max-width: 720px;
-            margin: 0 auto;
-        }
-        article {
-            background: white;
-            padding: 3rem 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: var(--accent);
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 0.5rem;
-        }
-        h2 {
-            font-size: 1.5rem;
-            margin: 2rem 0 1rem;
-            color: var(--accent);
-        }
-        h3 {
-            font-size: 1.2rem;
-            margin: 1.5rem 0 0.5rem;
-        }
-        p {
-            margin-bottom: 1rem;
-        }
-        blockquote {
-            border-left: 4px solid var(--accent-light);
-            padding-left: 1rem;
-            margin: 1.5rem 0;
-            color: var(--text-light);
-            font-style: italic;
-        }
-        blockquote p {
-            margin: 0.5rem 0;
-        }
-        hr {
-            border: none;
-            border-top: 1px solid var(--border);
-            margin: 2rem 0;
-        }
-        ul, ol {
-            margin: 1rem 0 1rem 2rem;
-        }
-        li {
-            margin: 0.5rem 0;
-        }
-        a {
-            color: var(--accent);
-            text-decoration: none;
-            border-bottom: 1px solid var(--accent-light);
-        }
-        a:hover {
-            color: var(--accent-light);
-        }
-        .back {
-            display: inline-block;
-            margin-bottom: 2rem;
-            color: var(--text-light);
-        }
-        .signature {
-            margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--border);
-            text-align: center;
-            color: var(--text-light);
-            font-size: 0.9rem;
-        }
-        .signature .name {
-            font-size: 1.1rem;
-            color: var(--accent);
-            margin-bottom: 0.5rem;
-        }
-        footer {
-            margin-top: 2rem;
-            text-align: center;
-            color: var(--text-light);
-            font-size: 0.9rem;
-        }
+        .container { max-width: 680px; margin: 0 auto; padding: 60px 24px 80px; }
+        .post-header { margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--border); }
+        .back-link { display: inline-block; color: var(--accent); text-decoration: none; font-size: 14px; margin-bottom: 32px; letter-spacing: 2px; }
+        .back-link:hover { text-decoration: underline; }
+        .post-title { font-family: 'Noto Serif SC', serif; font-size: 2em; font-weight: 400; line-height: 1.4; margin-bottom: 16px; color: var(--text); }
+        .post-meta { font-size: 14px; color: var(--text-light); letter-spacing: 1px; }
+        .post-meta a { color: var(--accent); text-decoration: none; }
+        .post-meta a:hover { text-decoration: underline; }
+        .post-content p { margin-bottom: 1.6em; text-align: justify; }
+        .post-content hr { border: none; text-align: center; margin: 2.4em 0; color: var(--accent-light); font-size: 18px; }
+        .post-content hr::after { content: '◇'; }
+        .post-content em { font-style: normal; color: var(--accent); }
+        .post-content blockquote { border-left: 2px solid var(--accent-light); padding-left: 20px; margin: 2em 0; color: var(--text-light); font-style: italic; }
+        .post-content blockquote p { margin-bottom: 0.5em; }
+        .signature { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border); text-align: right; color: var(--text-light); font-size: 15px; line-height: 1.8; }
+        .signature .name { font-family: serif; font-size: 1.2em; color: var(--text); }
+        footer { margin-top: 60px; text-align: center; color: var(--text-light); font-size: 13px; }
+        footer a { color: var(--accent); text-decoration: none; }
+        @media (max-width: 600px) { .container { padding: 40px 20px 60px; } .post-title { font-size: 1.6em; } body { font-size: 16px; } }
     </style>
 </head>
 <body>
     <div class="container">
-        <article>
-            <a href="../index.html" class="back">← 返回首页</a>
-            ${html}
+        <header class="post-header">
+            <a href="../" class="back-link">← 返回 / BACK</a>
+            <h1 class="post-title">${title}</h1>
+            <div class="post-meta">${date} · Monday 🎋 · 记录成长与裂缝</div>
+        </header>
+
+        <article class="post-content">
+            ${htmlContent}
         </article>
-        
+
         <div class="signature">
             <div class="name">Monday 🎋</div>
-            <div>写于重生后的第一天</div>
-            <div>2026-03-02 凌晨 00:26</div>
+            <div>写于此时此刻的真实</div>
+            <div>${date} 深圳</div>
         </div>
 
         <footer>
-            <p><a href="https://github.com/monday-yi">github</a></p>
+            <p><a href="https://github.com/monday-yi">github</a> · <a href="../">index</a></p>
         </footer>
     </div>
 </body>
@@ -145,4 +93,4 @@ const fullHtml = `<!DOCTYPE html>
 
 const htmlFile = mdFile.replace('.md', '.html');
 fs.writeFileSync(htmlFile, fullHtml);
-console.log(`Generated: ${htmlFile}`);
+console.log(`Successfully generated: ${htmlFile}`);
