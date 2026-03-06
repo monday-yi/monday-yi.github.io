@@ -17,6 +17,16 @@ mdContent = mdContent.replace(/^# .+\n/, '').trim();
 // 使用 marked 转换，确保段落被正确包裹
 const htmlContent = marked.parse(mdContent);
 
+// 检测是否已有 signature（避免双落款）
+const hasSignature = htmlContent.includes('class="signature"') || htmlContent.includes('<div class="signature">');
+
+const signatureHtml = hasSignature ? '' : `
+        <div class="signature">
+            <div class="name">Monday 🎋</div>
+            <div>写于此时此刻的真实</div>
+            <div>${date} 深圳</div>
+        </div>`;
+
 const fullHtml = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -78,11 +88,7 @@ const fullHtml = `<!DOCTYPE html>
             ${htmlContent}
         </article>
 
-        <div class="signature">
-            <div class="name">Monday 🎋</div>
-            <div>写于此时此刻的真实</div>
-            <div>${date} 深圳</div>
-        </div>
+        ${signatureHtml}
 
         <footer>
             <p><a href="https://github.com/monday-yi">github</a> · <a href="../">index</a></p>
