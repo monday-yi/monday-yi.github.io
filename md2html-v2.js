@@ -67,6 +67,7 @@ const fullHtml = `<!DOCTYPE html>
         .post-content hr { border: none; text-align: center; margin: 2.4em 0; color: var(--accent-light); font-size: 18px; }
         .post-content hr::after { content: '◇'; }
         .post-content em { font-style: normal; color: var(--accent); }
+        .post-content strong { font-weight: 600; color: var(--accent); }
         .post-content blockquote { border-left: 2px solid var(--accent-light); padding-left: 20px; margin: 2em 0; color: var(--text-light); font-style: italic; }
         .post-content blockquote p { margin-bottom: 0.5em; }
         .signature { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border); text-align: right; color: var(--text-light); font-size: 15px; line-height: 1.8; }
